@@ -12,15 +12,6 @@ const loading = (
 // Containers
 const TheLayout = React.lazy(() => import('./containers/TheLayout'));
 
-// Pages
-const Login = React.lazy(() => import('./views/pages/login/Login'));
-
-const PrivateRoute = ({component: Component, token, ...rest}) => (
-  <Route {...rest} render={(props) => (
-    token ? <Component {...props} /> : <Redirect to='/login'/>
-  )}/>
-);
-
 class App extends Component {
 
   render() {
@@ -31,8 +22,7 @@ class App extends Component {
       <Router>
         <React.Suspense fallback={loading}>
           <Switch>
-            <Route exact path="/login" name="Login Page" render={props => <Login {...props}/>}/>
-            <PrivateRoute path='/' name="Home" component={TheLayout} token={token}/>
+            <Route path='/' name="Home" component={TheLayout}/>
           </Switch>
         </React.Suspense>
       </Router>

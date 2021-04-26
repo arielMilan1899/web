@@ -28,7 +28,6 @@ const TheContent = () => {
                   {...route} />
               )
             })}
-            <Redirect from="/" to="/messages" />
           </Switch>
         </Suspense>
       </CContainer>
