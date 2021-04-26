@@ -10,7 +10,8 @@ import {
 } from '@coreui/react'
 import {apiUrl} from "../../../config";
 import {formatRoute} from "react-router-named-routes";
-import {GATEWAYS_DETAIL} from "../../../routes";
+import {GATEWAYS_CREATE, GATEWAYS_DETAIL, GATEWAYS_UPDATE} from "../../../routes";
+import DeleteConfirmation from "../../helpers/deleteConfirmation";
 
 class GatewaysListContainer extends Component {
 
@@ -22,7 +23,13 @@ class GatewaysListContainer extends Component {
   }
 
   componentDidMount() {
-    fetch(`${apiUrl}/gateways`)
+    fetch(`${apiUrl}/gateways`, {
+      method: 'GET', // or 'PUT'
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
       .then(res => res.json())
       .then(({data}) => {
         this.setState({gateways: data})
@@ -31,13 +38,34 @@ class GatewaysListContainer extends Component {
   }
 
   render() {
+
+    const removeGateway = (serialNumber) => {
+      fetch(`${apiUrl}/gateways/remove`, {
+        method: 'DELETE', // or 'PUT'
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({serialNumber}),
+      })
+        .then(response => response.json())
+        .then(() => {
+          this.setState({
+            gateways: this.state.gateways.filter(gateway => gateway.serialNumber !== serialNumber)
+          })
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    };
+
     return (
-      <Gateways gateways={this.state.gateways}/>
+      <Gateways gateways={this.state.gateways} removeGateway={removeGateway}/>
     )
   }
 }
 
-const Gateways = ({gateways}) => {
+const Gateways = ({gateways, removeGateway}) => {
+
   return (
     <CRow>
       <CCol>
@@ -47,7 +75,7 @@ const Gateways = ({gateways}) => {
               Gateways
             </b>
             <div className="card-header-actions">
-              <CButton color='success'>Crear</CButton>
+              <CButton color='success' to={GATEWAYS_CREATE}>Create</CButton>
             </div>
           </CCardHeader>
           <CCardBody>
@@ -89,11 +117,11 @@ const Gateways = ({gateways}) => {
                     </td>
                   ),
                 'Acciones':
-                  ({id, title, slug}) => (
+                  ({serialNumber}) => (
                     <td>
-                      {/*<CButton color='secondary'*/}
-                      {/*         to={formatRoute(CATEGORY_UPDATE, {category: slug.en})}>Editar</CButton>*/}
-                      {/*<DeleteConfirmation mutation={deleteCategory} variables={{ids: [id]}} label={title.es}/>*/}
+                      <CButton color='primary'
+                               to={formatRoute(GATEWAYS_UPDATE, {gateway: serialNumber})}>Update</CButton>
+                      <DeleteConfirmation mutation={removeGateway} variables={serialNumber} label={'Gateway'}/>
                     </td>
                   )
               }}

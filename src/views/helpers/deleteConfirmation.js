@@ -9,37 +9,37 @@ import {
 } from '@coreui/react'
 
 const DeleteConfirmation = ({label, mutation, variables}) => {
-  const [confirm, setConfirm] = useState(false)
-  const [openModal, setOpenModal] = useState(false)
+  const [confirm, setConfirm] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const onConfirm = (value) => {
-    setConfirm(value)
+    setConfirm(value);
     setOpenModal(!openModal)
-  }
+  };
 
   return (
     <>
       <CButton color="danger" className="px-4"
                onClick={() => setOpenModal(!openModal)}>
-        Eliminar
+        Remove
       </CButton>
       <CModal
         show={openModal}
-        onClosed={() => confirm && mutation({variables: variables})}
+        onClosed={() => confirm && mutation(variables)}
         onClose={() => setOpenModal(!openModal)}
       >
         <CModalHeader closeButton>
           <CModalTitle>
-            Vas a eliminar <b>{label}</b>, esta acción no se puede deshacer.
+            You will remove a <b>{label}</b>, this action cannot be undone.
           </CModalTitle>
         </CModalHeader>
         <CModalFooter>
           <CCol>
             <CButton color="danger" onClick={() => onConfirm(true)}>
-              Eliminar
+              Remove
             </CButton>
             <CButton color="secondary" onClick={() => onConfirm(false)}>
-              Cancelar
+              Cancel
             </CButton>
           </CCol>
         </CModalFooter>

@@ -1,80 +1,40 @@
 import React, {useState} from 'react'
-import {useMutation, useQuery} from "@apollo/react-hooks";
-import {useHistory, useParams} from 'react-router-dom'
-import gql from 'graphql-tag';
-import CategoryForm from "../form/Form";
-import {CATEGORIES_QUERY} from "../list/List";
+import {useHistory} from 'react-router-dom'
+import {apiUrl} from "../../../config";
+import GatewayForm from "../form/Form";
 
-/**
- * Mutation to create a category
- */
-export const CREATE_CATEGORY_MUTATION = gql`
-    mutation(
-        $title: LanguageInput!
-        $description: LanguageInput
-        $order: Int!
-        $parentCategory: ID!
-        $posterUrl: String
-        $posterPublicId: String
-    ) {
-        createCategory(
-            input: {
-                title: $title
-                description: $description
-                order: $order
-                parentCategory: $parentCategory
-                posterUrl: $posterUrl
-                posterPublicId: $posterPublicId
-            }
-        ) {
-            category {
-                id
-            }
-            errors {
-                field
-                messages
-            }
-            clientMutationId
-        }
-    }
-`;
 
-const CategoryCreateContainer = () => {
-  const params = useParams();
-  const history = useHistory()
-  const [errors, setErrors] = useState()
-  const {loading, error, data} = useQuery(CATEGORIES_QUERY);
+const GatewayCreateContainer = () => {
+  const history = useHistory();
+  const [errors, setErrors] = useState();
 
-  const [createCategory] = useMutation(
-    CREATE_CATEGORY_MUTATION,
-    {
-      onError(error) {
-        setErrors({errors: [error]})
+  const createGateway = (gateway) => {
+    fetch(`${apiUrl}/gateways/add`, {
+      method: 'POST', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
       },
-      onCompleted({createCategory: {errors}}) {
-        if (!errors) {
-          history.goBack();
+      body: JSON.stringify(gateway),
+    })
+      .then(response => response.json())
+      .then(({data, errors: postErrors}) => {
+        if (postErrors) {
+          setErrors(postErrors)
         } else {
-          setErrors({errors});
+          history.push(`/gateways/detail/${data.serialNumber}`);
         }
-      },
-    }
-  );
-
-  if (error)
-    return <p>Oops, algo salió mal!</p>
-
-  if (loading)
-    return <p>Cargando...</p>
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
 
   return (
-    <CategoryForm
-      categorySave={category => createCategory({variables: category})}
-      categories={data.categories}
-      parentCategorySlug={params.category}
+    <GatewayForm
+      gatewaySave={gateway => createGateway(gateway)}
       errors={errors}
     />
   );
-}
+};
 
-export default CategoryCreateContainer;
+export default GatewayCreateContainer;

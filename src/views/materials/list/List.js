@@ -181,7 +181,7 @@ const Materials = () => {
               Materiales
             </b>
             <div className="card-header-actions">
-              <CButton color='success' onClick={() => onOpenModal()}>Crear</CButton>
+              <CButton color='success' onClick={() => onOpenModal()}>Create</CButton>
             </div>
           </CCardHeader>
           <CCardBody>

@@ -1,4 +1,4 @@
-import React, {Component, useState} from 'react'
+import React, {Component} from 'react'
 import {
   CButton,
   CCard,
@@ -6,12 +6,13 @@ import {
   CCardHeader,
   CCol,
   CDataTable,
-  CHeaderNavLink,
-  CPagination,
   CRow
 } from '@coreui/react'
+import {useHistory} from 'react-router-dom'
 import {apiUrl,} from "../../../config";
 import {formatRoute} from "react-router-named-routes";
+import {GATEWAYS_UPDATE} from "../../../routes";
+import DeleteConfirmation from "../../helpers/deleteConfirmation";
 
 class GatewaysContainer extends Component {
 
@@ -40,18 +41,39 @@ class GatewaysContainer extends Component {
 }
 
 const Gateway = ({gateway}) => {
+  const history = useHistory();
 
   if (!gateway) {
     return null;
   }
 
-  const {name, ipv4, peripherals} = gateway;
+  const removeGateway = (serialNumber) => {
+    fetch(`${apiUrl}/gateways/remove`, {
+      method: 'DELETE', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({serialNumber}),
+    })
+      .then(response => response.json())
+      .then(history.push(`/gateways`))
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+  const {serialNumber, name, ipv4, peripherals} = gateway;
 
   return (
     <CRow>
       <CCol>
         <CCard>
           <CCardHeader>
+            <div className="card-header-actions">
+              <CButton color='primary'
+                       to={formatRoute(GATEWAYS_UPDATE, {gateway: serialNumber})}>Update</CButton>
+              <DeleteConfirmation mutation={removeGateway} variables={serialNumber} label={'Gateway'}/>
+            </div>
             <h1>{gateway.serialNumber}</h1>
           </CCardHeader>
           <CCardBody>

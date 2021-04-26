@@ -1,84 +1,72 @@
-import React, {useState} from 'react'
-import {useMutation, useQuery} from "@apollo/react-hooks";
+import React, {Component, useState} from 'react'
 import {useHistory} from 'react-router-dom'
-import gql from 'graphql-tag';
-import CategoryForm from "../form/Form";
-import {CATEGORY_QUERY} from "../details/DetailsContainer";
+import {apiUrl} from "../../../config";
+import GatewayForm from "../form/Form";
 
-/**
- * Mutation to update an category
- */
-export const EDIT_CATEGORY_MUTATION = gql`
-  mutation(
-    $id: ID
-    $title: LanguageInput!
-    $description: LanguageInput
-    $order: Int
-    $parentCategory: ID!
-    $posterUrl: String
-    $posterPublicId: String
-  ) {
-    updateCategory(
-      input: {
-        id: $id
-        title: $title
-        description: $description
-        order: $order
-        parentCategory: $parentCategory
-        posterUrl: $posterUrl
-        posterPublicId: $posterPublicId
-      }
-    ) {
-      category {
-        id
-      }
-      errors {
-        field
-        messages
-      }
-      clientMutationId
-    }
+class GatewayUpdateContainer extends Component {
+
+  constructor(props) {
+    super(props);
+    const {gateway} = props.match.params;
+
+    this.state = {serialNumber: gateway};
   }
-`;
 
-const CategoryUpdateContainer = (props) => {
-  const {category, subcategory} = props.match.params;
-  const slugEn = subcategory ? `${category}_${subcategory}` : category;
-  const history = useHistory()
-  const [errors, setErrors] = useState()
-  const {loading, error, data} = useQuery(CATEGORY_QUERY, {variables: {slugEn}});
+  componentDidMount() {
+    const {serialNumber} = this.state;
+    fetch(`${apiUrl}/gateways/${serialNumber}`)
+      .then(res => res.json())
+      .then(({data}) => {
+        this.setState({gateway: data})
+      })
+      .catch(console.log)
+  }
 
-  const [updateCategory] = useMutation(
-    EDIT_CATEGORY_MUTATION,
-    {
-      onError(error) {
-        setErrors({errors: [error]})
-      },
-      onCompleted({updateCategory: {errors}}) {
-        if (!errors) {
-          history.goBack();
-        } else {
-          setErrors({errors});
-        }
-      },
-    }
-  );
-  if (error)
-    return <p>Oops, algo salio mal!</p>
-
-  if (loading)
-    return <p>Cargando...</p>
-
-  return (
-    <CategoryForm
-      updateMode={true}
-      category={data.category}
-      categorySave={category => updateCategory({variables: category})}
-      categories={subcategory ? [data.category.parentCategory] : []}
-      parentCategorySlug={category}
-      errors={errors}
-    />
-  );
+  render() {
+    return (
+      <GatewayUpdate gateway={this.state.gateway}/>
+    )
+  }
 }
 
-export default CategoryUpdateContainer;
+const GatewayUpdate = ({gateway}) => {
+
+  const history = useHistory();
+  const [errors, setErrors] = useState();
+
+  const updateGateway = (gateway) => {
+    fetch(`${apiUrl}/gateways/update`, {
+      method: 'PUT', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(gateway),
+    })
+      .then(response => response.json())
+      .then(({data, errors: postErrors}) => {
+        if (postErrors) {
+          setErrors(postErrors)
+        } else {
+          history.push(`/gateways/detail/${data.serialNumber}`);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+  if (!gateway) {
+    return null;
+  }
+
+  return (
+    <GatewayForm
+      gateway={gateway}
+      gatewaySave={gateway => updateGateway(gateway)}
+      errors={errors}
+      updateMode
+    />
+  );
+};
+
+export default GatewayUpdateContainer;
