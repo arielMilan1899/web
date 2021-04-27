@@ -5,13 +5,17 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
 const Gateways = React.lazy(() => import('./views/gateways/list/List'));
 const GatewayCreate = React.lazy(() => import('./views/gateways/create/CreateContainer'));
 const GatewayUpdate = React.lazy(() => import('./views/gateways/update/UpdateContanier'));
+const PeripheralCreate = React.lazy(() => import('./views/peripherals/create/CreateContainer'));
+const PeripheralUpdate = React.lazy(() => import('./views/peripherals/update/UpdateContanier'));
 
 // routes path
 export const GATEWAYS = '/gateways';
 export const GATEWAYS_CREATE = '/gateways/create';
 export const GATEWAYS_DETAIL = '/gateways/detail/:gateway';
 export const GATEWAYS_UPDATE = '/gateways/update/:gateway';
-export const GATEWAYS_REMOVE = '/gateways/remove/:gateway';
+
+export const PERIPHERALS_CREATE = '/peripherals/create/:gateway';
+export const PERIPHERALS_UPDATE = '/peripherals/update/:peripheral';
 
 const routes = [
   {path: '/', exact: true, name: 'Home'},
@@ -36,12 +40,18 @@ const routes = [
     name: 'Update gateway',
     component: GatewayUpdate,
   },
-  // {
-  //   path: GATEWAYS_UPDATE,
-  //   exact: true,
-  //   name: 'Update category',
-  //   component: GATEWAYS_REMOVE,
-  // },
+  {
+    path: PERIPHERALS_CREATE,
+    exact: true,
+    name: 'Create peripheral',
+    component: PeripheralCreate,
+  },
+  {
+    path: PERIPHERALS_UPDATE,
+    exact: true,
+    name: 'Update peripheral',
+    component: PeripheralUpdate,
+  },
 ];
 
 export default routes;

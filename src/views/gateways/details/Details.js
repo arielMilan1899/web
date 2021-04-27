@@ -11,7 +11,7 @@ import {
 import {useHistory} from 'react-router-dom'
 import {apiUrl,} from "../../../config";
 import {formatRoute} from "react-router-named-routes";
-import {GATEWAYS_UPDATE} from "../../../routes";
+import {GATEWAYS_UPDATE, PERIPHERALS_CREATE, PERIPHERALS_UPDATE} from "../../../routes";
 import DeleteConfirmation from "../../helpers/deleteConfirmation";
 
 class GatewaysContainer extends Component {
@@ -25,7 +25,13 @@ class GatewaysContainer extends Component {
 
   componentDidMount() {
     const {serialNumber} = this.state;
-    fetch(`${apiUrl}/gateways/${serialNumber}`)
+    fetch(`${apiUrl}/gateways/${serialNumber}`, {
+      method: 'GET', // or 'PUT'
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
       .then(res => res.json())
       .then(({data}) => {
         this.setState({gateway: data})
@@ -34,13 +40,34 @@ class GatewaysContainer extends Component {
   }
 
   render() {
+
+    const removePeripheral = (id) => {
+      fetch(`${apiUrl}/peripherals/remove`, {
+        method: 'DELETE', // or 'PUT'
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({id}),
+      })
+        .then(response => response.json())
+        .then(() => {
+          const {gateway} = this.state;
+          this.setState({
+            gateway: {...gateway, peripherals: gateway.peripherals.filter(peripheral => peripheral.id !== id)}
+          })
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    };
+
     return (
-      <Gateway gateway={this.state.gateway}/>
+      <Gateway gateway={this.state.gateway} removePeripheral={removePeripheral}/>
     )
   }
 }
 
-const Gateway = ({gateway}) => {
+const Gateway = ({gateway, removePeripheral}) => {
   const history = useHistory();
 
   if (!gateway) {
@@ -61,6 +88,7 @@ const Gateway = ({gateway}) => {
         console.error('Error:', error);
       });
   };
+
 
   const {serialNumber, name, ipv4, peripherals} = gateway;
 
@@ -88,6 +116,10 @@ const Gateway = ({gateway}) => {
 
               </CCardHeader>
               <CCardBody>
+                <div className="card-header-actions">
+                  <CButton color='primary' disabled={peripherals.length === 10}
+                           to={formatRoute(PERIPHERALS_CREATE, {gateway: serialNumber})}>Create</CButton>
+                </div>
                 <h5><b> Peripherals </b></h5>
                 <CDataTable
                   items={peripherals}
@@ -117,13 +149,12 @@ const Gateway = ({gateway}) => {
                         </td>
                       ),
                     'Acciones':
-                      ({id, title, slug}) => (
+                      ({id}) => (
                         <td>
-                          {/*<CButton color='secondary' to={formatRoute(SUBCATEGORY_UPDATE, {*/}
-                          {/*  category: category.slug.en,*/}
-                          {/*  subcategory: slug.en.split('_')[1]*/}
-                          {/*})}>Editar</CButton>*/}
-                          {/*<DeleteConfirmation mutation={deleteCategory} variables={{ids: [id]}} label={title.es}/>*/}
+                          <CButton color='primary' to={formatRoute(PERIPHERALS_UPDATE, {
+                            peripheral: id
+                          })}>Update</CButton>
+                          <DeleteConfirmation mutation={removePeripheral} variables={id} label='Peripheral'/>
                         </td>
                       )
                   }}
