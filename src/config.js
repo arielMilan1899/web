@@ -1,3 +1,3 @@
 module.exports = {
-  apiUrl: process.env.API_URL || 'http://localhost:5000',
+  apiUrl: 'https://rest-api-theta.vercel.app',
 };
