@@ -28,6 +28,7 @@ const TheContent = () => {
                   {...route} />
               )
             })}
+            <Redirect from="/" to="/dashboard" />
           </Switch>
         </Suspense>
       </CContainer>

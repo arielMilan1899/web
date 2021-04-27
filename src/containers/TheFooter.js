@@ -5,7 +5,7 @@ const TheFooter = () => {
   return (
     <CFooter fixed={false}>
       <div className="mfs-auto">
-        <span className="mr-1">&copy; HNN 2020</span>
+        <span className="mr-1">&copy; Ariel 2021</span>
       </div>
     </CFooter>
   )
